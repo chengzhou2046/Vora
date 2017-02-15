@@ -1,0 +1,70 @@
+################################
+# SAP HANA VORA 1.3 DISK STORE #
+################################
+
+# Disk to Memory Accelator 
+# Vora provides relation capabilities without loading all the data into memory due to the data size. 
+# Provides “spill to disk like feature”
+# Assurance of high performance even when data-set sizes exceed memory capacity
+
+# show instance details in Vora Transaction Coordinator in Vora Manager.
+# Enter the instance number of the Vora cluster. 
+# Used to derive the port number of the Vora transaction coordinator for the remote source connection.
+
+hdfs dfs -rm /user/cluster_admin/some_facts.csv
+rm some_facts.csv
+
+echo "1,Product XYZ is good,3,2017-01-01" >> some_facts.csv
+cat some_facts.csv
+
+hdfs dfs -ls /user/cluster_admin/
+hdfs dfs -put some_facts.csv
+hdfs dfs -ls /user/cluster_admin/
+hdfs dfs -cat /user/cluster_admin/some_facts.csv
+
+drop table if exists SOMEFACTS;
+create table SOMEFACTS
+(COMMENTID integer, COMMENTDATA varchar(2000), PRIORITY double, PUBDATE date)
+using com.sap.spark.engines.disk
+options
+(
+files "/user/cluster_admin/some_facts.csv",
+csvdelimiter ",",
+dateformat "PUBDATE: 'yyyy-mm-dd'",
+tableSchema "COMMENTID integer, COMMENTDATA varchar(2000), PRIORITY double, PUBDATE date"
+);
+-- select * from somefacts;
+
+-- show how to create in vora modeller
+
+register all tables 
+using com.sap.spark.engines.disk
+ignoring conflicts;
+
+show tables;
+show tables using com.sap.spark.engines.disk;
+select * from sys_tables 
+using com.sap.spark.engines.disk;
+
+=========
+== SDA ==
+=========
+
+# SAP HANA Wire port of the transaction coordinator, which is determined as 3XX15, where XX is the instance number of the SAP HANA Vora cluster. 
+# Not the number of the SAP HANA instance
+# Doesn't currently check credentials. 
+
+drop remote source vora cascade;
+
+create remote source vora adapter "voraodbc"
+configuration  'servernode=**.**.**.**:30115;driver=libodbchdb'
+with credential type 'password' 
+using 'user=admin;password=Password123';
+
+drop table system.vora_somefacts;
+
+create virtual table system.vora_somefacts 
+at "VORA"."null"."VORA"."SOMEFACTS";
+
+select * from system.vora_somefacts;
+

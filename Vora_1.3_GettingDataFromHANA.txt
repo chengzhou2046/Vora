@@ -26,7 +26,7 @@ show tables
 using com.sap.spark.hana
 options 
 (
-host "34.195.225.172",
+host "**.**.**.**",
 instance "00",
 port "13",
 user "SYSTEM",
@@ -38,7 +38,7 @@ register all tables
 using com.sap.spark.hana
 options 
 (
-host "34.195.225.172",
+host "**.**.**.**",
 instance "00",
 port "13",
 user "SYSTEM",

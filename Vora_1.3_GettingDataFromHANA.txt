@@ -1,6 +1,6 @@
-#################################
-# SAP HANA VORA JOINING TO HANA #
-#################################
+########################################
+# SAP HANA VORA GETTING DATA FROM HANA #
+########################################
 
 -- run in vora
 -- register facts table 
@@ -13,7 +13,7 @@ create schema league_schema;
 create table league_schema.LATEST_FACTS
 (TEAMID integer, LEAGUEYEAR varchar(4));
 
-insert into league_schema.latest_facts values (5,'2017');
+insert into league_schema.latest_facts values (11,'2016');
 
 select * from league_schema.latest_facts;
 
@@ -44,7 +44,8 @@ port "13",
 user "SYSTEM",
 passwd "SHALive1",
 dbschema "LEAGUE_SCHEMA"
-);
+)
+ignoring conflicts;
 
 show tables; 
 
@@ -52,3 +53,20 @@ show tables;
 select TEAMID, LEAGUEYEAR from latest_facts
 union
 select TEAMID, LEAGUEYEAR from facts;
+
+%spark.vora register all tables using com.sap.spark.vora ignoring conflicts
+
+%spark.vora register all tables
+using com.sap.spark.hana
+options 
+(
+host "**.**.**.**",
+instance "00",
+port "13",
+user "SYSTEM",
+passwd "SHALive1",
+dbschema "LEAGUE_SCHEMA"
+)
+ignoring conflicts
+
+%spark.vora select * from LEAGUEWINNERS order by TROPHY_COUNT desc

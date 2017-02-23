@@ -1,11 +1,6 @@
-##################
+################################
 # SAP HANA VORA 1.3 DISK STORE #
 ################################
-
-# Disk to Memory Accelator 
-# Vora provides relation capabilities without loading all the data into memory due to the data size. 
-# Provides “spill to disk like feature”
-# Assurance of high performance even when data-set sizes exceed memory capacity
 
 hdfs dfs -rm /user/cluster_admin/cl_facts.csv
 rm cl_facts.csv

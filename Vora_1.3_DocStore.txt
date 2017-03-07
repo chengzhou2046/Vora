@@ -2,18 +2,14 @@
 # SAP HANA VORA 1.3 DOC STORE #
 ###############################
 
-# In-memory distributed computing engine for analyzing schema-less JavaScript Object Notation (JSON) format files
-# Introduces NoSQL features like storing JSON documents. 
-# Supports schema-less tables, allowing you to flexibly add or remove fields from any documents and helps scale horizontally.
-
-clear
-
 http://jsonlint.com/
 
+clear
 rm legends.json
 rm legends_stats.json
 hdfs dfs -rm /user/cluster_admin/legends.json
 hdfs dfs -rm /user/cluster_admin/legends_stats.json
+clear
 
 echo '{"playerid": 1, "name": "George Best", "placeofbirth": {"city": "Belfast", "country": "Northern Ireland"}, "played_for": [{"team": "Manchester United"}, {"team": "Jewish Guild"}, {"team": "Dunstable Town"}, {"team": "Stockport County"}, {"team": "Cork Celtic"}, {"team": "Los Angeles Aztecs"}, {"team": "Fulham"}, {"team": "Los Angeles Aztecs"}, {"team": "Fort Lauderdale Strikers"}, {"team": "Hibernian"}, {"team": "San Jose Earthquakes"}, {"team": "San Jose Earthquakes (indoor)"}, {"team": "Sea Bee"}, {"team": "Hong Kong Rangers"}, {"team": "Bournemouth"}, {"team": "Brisbane Lions"}, {"team": "Osborne Park Galeb"}, {"team": "Nuneaton Borough"}, {"team": "Tobermore United"}], "dateofbirth": "1946-05-22T00:00:00.000Z"} 
 {"playerid": 2, "name": "Eric Cantona", "placeofbirth": {"city": "Marseille", "country": "France"}, "played_for": [{"team": "Auxerre"}, {"team": "Martigues"}, {"team": "Marseille"}, {"team": "Bordeaux"}, {"team": "Montpellier"}, {"team": "Nîmes"}, {"team": "Leeds United"}, {"team": "Manchester United"}], "dateofbirth": "1966-05-24T00:00:00.000Z"}'>> legends.json
@@ -58,8 +54,6 @@ clear
 hdfs dfs -cat /user/cluster_admin/legends.json
 hdfs dfs -cat /user/cluster_admin/legends_stats.json
 
-##
-
 drop collection legends
 using com.sap.spark.engines;
 
@@ -88,8 +82,6 @@ using com.sap.spark.engines;
 
 ``select * from legends_stats`` 
 using com.sap.spark.engines;
-
-##
 
 ``select {playerid: "playerid"} from legends`` 
 using com.sap.spark.engines;

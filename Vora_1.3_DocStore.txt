@@ -9,6 +9,7 @@ rm legend_dims.json
 rm legend_facts.json
 hdfs dfs -rm /user/cluster_admin/legend_dims.json
 hdfs dfs -rm /user/cluster_admin/legend_facts.json
+hdfs dfs -ls /user/cluster_admin/
 clear
 
 echo '{"playerid": 1, "name": "George Best", "placeofbirth": {"city": "Belfast", "country": "Northern Ireland"}, "played_for": [{"team": "Manchester United"}, {"team": "Jewish Guild"}, {"team": "Dunstable Town"}, {"team": "Stockport County"}, {"team": "Cork Celtic"}, {"team": "Los Angeles Aztecs"}, {"team": "Fulham"}, {"team": "Los Angeles Aztecs"}, {"team": "Fort Lauderdale Strikers"}, {"team": "Hibernian"}, {"team": "San Jose Earthquakes"}, {"team": "San Jose Earthquakes (indoor)"}, {"team": "Sea Bee"}, {"team": "Hong Kong Rangers"}, {"team": "Bournemouth"}, {"team": "Brisbane Lions"}, {"team": "Osborne Park Galeb"}, {"team": "Nuneaton Borough"}, {"team": "Tobermore United"}], "dateofbirth": "1946-05-22T00:00:00.000Z"} 
@@ -54,7 +55,8 @@ clear
 hdfs dfs -cat /user/cluster_admin/legend_dims.json
 hdfs dfs -cat /user/cluster_admin/legend_facts.json
 
-###########################
+# create collections
+#####################
 
 drop collection legend_dims
 using com.sap.spark.engines;
@@ -79,6 +81,9 @@ files "/user/cluster_admin/legend_facts.json"
 show tables 
 using com.sap.spark.engines;
 
+# simple selects
+#################
+
 ``select * from legend_dims`` 
 using com.sap.spark.engines;
 
@@ -94,6 +99,9 @@ using com.sap.spark.engines;
 ``select {fullname: "name"} from legend_dims`` 
 using com.sap.spark.engines;
 
+# filtering
+############
+
 ``select * from legend_dims
 where "playerid" = 1`` 
 using com.sap.spark.engines;
@@ -101,6 +109,9 @@ using com.sap.spark.engines;
 ``select {fullname: "name"} from legend_dims
 where "placeofbirth"."city" = 'Belfast'`` 
 using com.sap.spark.engines;
+
+# arrays
+#########
 
 ``select {fullname: "name", team: "played_for"[1]} 
 from legend_dims`` 
@@ -115,6 +126,9 @@ using com.sap.spark.engines;
 from legend_dims
 where "playerid" = 1``
 using com.sap.spark.engines;
+
+# aggregations
+###############
 
 ``select {playerid: "playerid", total_goals: sum("goalsscored")} 
 from legend_facts
@@ -131,15 +145,42 @@ group by "playerid"``
 using com.sap.spark.engines;
 
 ``select {playerid: "playerid", 
-appearance_per_goal: round(sum("goalsscored"/"appearances"),0)} 
+appearances_per_goal: round(sum("goalsscored"/"appearances"),0)} 
 from legend_facts
 where "playerid" = 2
 group by "playerid"``
 using com.sap.spark.engines;
 
-========================
-== spark shell syntax ==
-========================
+# joins
+########
+
+# to demonstrate 2 pieces of the join: 1st piece
+select * from 
+(``select "playerid", "name"
+from legend_dims``
+using com.sap.spark.engines) as t1
+
+# to demonstrate 2 pieces of the join: 2nd piece
+select * from 
+(``select "playerid", sum("goalsscored") as goals 
+from legend_facts
+group by "playerid"``
+using com.sap.spark.engines) as t2
+
+# joining both pieces together
+select NAME, GOALS from 
+(``select "playerid", "name"
+from legend_dims``
+using com.sap.spark.engines) as t1,
+(``select "playerid", sum("goalsscored") as goals 
+from legend_facts
+group by "playerid"``
+using com.sap.spark.engines) as t2
+where
+t1.PLAYERID = t2.PLAYERID;
+
+# spark shell syntax 
+#####################
 
 import org.apache.spark.sql.SapSQLContext
 

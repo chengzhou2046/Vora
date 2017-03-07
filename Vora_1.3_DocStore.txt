@@ -5,16 +5,16 @@
 http://jsonlint.com/
 
 clear
-rm legends.json
-rm legends_stats.json
-hdfs dfs -rm /user/cluster_admin/legends.json
-hdfs dfs -rm /user/cluster_admin/legends_stats.json
+rm legend_dims.json
+rm legend_facts.json
+hdfs dfs -rm /user/cluster_admin/legend_dims.json
+hdfs dfs -rm /user/cluster_admin/legend_facts.json
 clear
 
 echo '{"playerid": 1, "name": "George Best", "placeofbirth": {"city": "Belfast", "country": "Northern Ireland"}, "played_for": [{"team": "Manchester United"}, {"team": "Jewish Guild"}, {"team": "Dunstable Town"}, {"team": "Stockport County"}, {"team": "Cork Celtic"}, {"team": "Los Angeles Aztecs"}, {"team": "Fulham"}, {"team": "Los Angeles Aztecs"}, {"team": "Fort Lauderdale Strikers"}, {"team": "Hibernian"}, {"team": "San Jose Earthquakes"}, {"team": "San Jose Earthquakes (indoor)"}, {"team": "Sea Bee"}, {"team": "Hong Kong Rangers"}, {"team": "Bournemouth"}, {"team": "Brisbane Lions"}, {"team": "Osborne Park Galeb"}, {"team": "Nuneaton Borough"}, {"team": "Tobermore United"}], "dateofbirth": "1946-05-22T00:00:00.000Z"} 
-{"playerid": 2, "name": "Eric Cantona", "placeofbirth": {"city": "Marseille", "country": "France"}, "played_for": [{"team": "Auxerre"}, {"team": "Martigues"}, {"team": "Marseille"}, {"team": "Bordeaux"}, {"team": "Montpellier"}, {"team": "Nîmes"}, {"team": "Leeds United"}, {"team": "Manchester United"}], "dateofbirth": "1966-05-24T00:00:00.000Z"}'>> legends.json
+{"playerid": 2, "name": "Eric Cantona", "placeofbirth": {"city": "Marseille", "country": "France"}, "played_for": [{"team": "Auxerre"}, {"team": "Martigues"}, {"team": "Marseille"}, {"team": "Bordeaux"}, {"team": "Montpellier"}, {"team": "Nîmes"}, {"team": "Leeds United"}, {"team": "Manchester United"}], "dateofbirth": "1966-05-24T00:00:00.000Z"}'>> legend_dims.json
 
-cat legends.json
+cat legend_dims.json
 
 echo '{"playerid": 1, "year": 1960, "team": "Manchester United", "appearances": 361, "goalsscored": 137}
 {"playerid": 1, "year": 1963, "team": "Jewish Guild", "appearances": 5, "goalsscored": 1}
@@ -42,80 +42,82 @@ echo '{"playerid": 1, "year": 1960, "team": "Manchester United", "appearances": 
 {"playerid": 2, "year": 1989, "team": "Montpellier", "appearances": 33, "goalsscored": 10}
 {"playerid": 2, "year": 1991, "team": "Nîmes", "appearances": 17, "goalsscored": 2}
 {"playerid": 2, "year": 1992, "team": "Leeds United", "appearances": 28, "goalsscored": 9}
-{"playerid": 2, "year": 1992, "team": "Manchester United", "appearances": 143, "goalsscored": 64}'>> legends_stats.json
+{"playerid": 2, "year": 1992, "team": "Manchester United", "appearances": 143, "goalsscored": 64}'>> legend_facts.json
 
-cat legends_stats.json
+cat legend_facts.json
 
 hdfs dfs -ls /user/cluster_admin/
-hdfs dfs -put legends.json
-hdfs dfs -put legends_stats.json
+hdfs dfs -put legend_dims.json
+hdfs dfs -put legend_facts.json
 hdfs dfs -ls /user/cluster_admin/
 clear
-hdfs dfs -cat /user/cluster_admin/legends.json
-hdfs dfs -cat /user/cluster_admin/legends_stats.json
+hdfs dfs -cat /user/cluster_admin/legend_dims.json
+hdfs dfs -cat /user/cluster_admin/legend_facts.json
 
-drop collection legends
+###########################
+
+drop collection legend_dims
 using com.sap.spark.engines;
 
-create collection legends
+create collection legend_dims
 using com.sap.spark.engines
 options 
 (
-files "/user/cluster_admin/legends.json"
+files "/user/cluster_admin/legend_dims.json"
 );
 
-drop collection legends_stats
+drop collection legend_facts
 using com.sap.spark.engines;
 
-create collection legends_stats
+create collection legend_facts
 using com.sap.spark.engines
 options 
 (
-files "/user/cluster_admin/legends_stats.json"
+files "/user/cluster_admin/legend_facts.json"
 );
 
 show tables 
 using com.sap.spark.engines;
 
-``select * from legends`` 
+``select * from legend_dims`` 
 using com.sap.spark.engines;
 
-``select * from legends_stats`` 
+``select * from legend_facts`` 
 using com.sap.spark.engines;
 
-``select {playerid: "playerid"} from legends`` 
+``select {playerid: "playerid"} from legend_dims`` 
 using com.sap.spark.engines;
 
-``select {name: "name"} from legends`` 
+``select {name: "name"} from legend_dims`` 
 using com.sap.spark.engines;
 
-``select {fullname: "name"} from legends`` 
+``select {fullname: "name"} from legend_dims`` 
 using com.sap.spark.engines;
 
-``select * from legends 
+``select * from legend_dims
 where "playerid" = 1`` 
 using com.sap.spark.engines;
 
-``select {fullname: "name"} from legends 
+``select {fullname: "name"} from legend_dims
 where "placeofbirth"."city" = 'Belfast'`` 
 using com.sap.spark.engines;
 
 ``select {fullname: "name", team: "played_for"[1]} 
-from legends`` 
+from legend_dims`` 
 using com.sap.spark.engines;
 
 ``select {fullname: "name", team: "played_for"[1]."team"} 
-from legends
+from legend_dims
 where "playerid" = 1``
 using com.sap.spark.engines;
 
 ``select {fullname: "name", team: "played_for"[2]."team"} 
-from legends
+from legend_dims
 where "playerid" = 1``
 using com.sap.spark.engines;
 
 ``select {playerid: "playerid", total_goals: sum("goalsscored")} 
-from legends_stats
+from legend_facts
 where "playerid" = 2
 group by "playerid"``
 using com.sap.spark.engines;
@@ -123,14 +125,14 @@ using com.sap.spark.engines;
 ``select {playerid: "playerid", 
 appearances: sum("appearances"),
 goalsscored: sum("goalsscored")} 
-from legends_stats
+from legend_facts
 where "playerid" = 2
 group by "playerid"``
 using com.sap.spark.engines;
 
 ``select {playerid: "playerid", 
 appearance_per_goal: round(sum("goalsscored"/"appearances"),0)} 
-from legends_stats
+from legend_facts
 where "playerid" = 2
 group by "playerid"``
 using com.sap.spark.engines;
@@ -146,10 +148,10 @@ val vc = new SapSQLContext(sc)
 vc.sql("show tables").show
 
 val testsql = 
-"""create collection legends using com.sap.spark.engines options (files "/user/cluster_admin/legends.json", storagebackend "hdfs")"""
+"""create collection legend_dims using com.sap.spark.engines options (files "/user/cluster_admin/legend_dims.json", storagebackend "hdfs")"""
 
 vc.sql(testsql).show
 
 vc.sql("show tables using com.sap.spark.engines").show
 
-vc.sql("``select * from legends`` using com.sap.spark.engines").show
+vc.sql("``select * from legend_dims`` using com.sap.spark.engines").show

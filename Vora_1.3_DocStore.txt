@@ -20,7 +20,6 @@ echo '{"playerid": 1, "name": "George Best", "placeofbirth": {"city": "Belfast",
 
 cat legends.json
 
-
 echo '{"playerid": 1, "year": 1960, "team": "Manchester United", "appearances": 361, "goalsscored": 137}
 {"playerid": 1, "year": 1963, "team": "Jewish Guild", "appearances": 5, "goalsscored": 1}
 {"playerid": 1, "year": 1974, "team": "Dunstable Town", "appearances": 0, "goalsscored": 0}
@@ -118,19 +117,30 @@ from legends
 where "playerid" = 1``
 using com.sap.spark.engines;
 
-?????????
-
-``select {fullname: "name", team: "goalinfo"[1]."team", 
-appearance_per_goal: round(sum("goalinfo"[1]."appearances" / "goalinfo"[1]."goalsscored"),0)} 
+``select {fullname: "name", team: "played_for"[2]."team"} 
 from legends
-where "playerid" = 2
-group by "name", "goalinfo"[1]."team"``
+where "playerid" = 1``
 using com.sap.spark.engines;
 
-``select {fullname: a."name", team: b."team"} 
-from legends a, legends_stats b
-where a.playerid = b.playerid
-and "playerid" = 2``
+``select {playerid: "playerid", total_goals: sum("goalsscored")} 
+from legends_stats
+where "playerid" = 2
+group by "playerid"``
+using com.sap.spark.engines;
+
+``select {playerid: "playerid", 
+appearances: sum("appearances"),
+goalsscored: sum("goalsscored")} 
+from legends_stats
+where "playerid" = 2
+group by "playerid"``
+using com.sap.spark.engines;
+
+``select {playerid: "playerid", 
+appearance_per_goal: round(sum("goalsscored"/"appearances"),0)} 
+from legends_stats
+where "playerid" = 2
+group by "playerid"``
 using com.sap.spark.engines;
 
 ========================

@@ -75,97 +75,145 @@ as h;
 # SAP HANA VORA 1.3 HIERARCHY FUNCTIONS #
 #########################################
 
-### adjacency-list hierarchy SQL statements
-select name, is_root(node) from hierarchy (
-using hierarchy_table as v
-join prior u on v.pred = u.succ
-order siblings by ord asc
-start where pred = 0
-set node
-) as h;
-
+select name(node) as nodename from hv;
+.. or ..
 select name, level(node) as level from hierarchy (
-using hierarchy_table as v
-join prior u on v.pred = u.succ
-order siblings by ord asc
-start where pred = 0
-set node)
+using HIERARCHY_TABLE as v
+join prior u on v.PRED = u.SUCC
+order siblings by ORD asc
+start where PRED = 0
+set NODE)
 as h;
 
-select b.succ, b.name, a.address, b.level
-from
-(select succ, name, level(node) as level from hierarchy (
-using hierarchy_table as v
-join prior u on v.pred = u.succ
-order siblings by ord asc
-start where pred = 0
-set node)
-as h) b, addresses a
-where b.succ = a.id;
-
-select name(node) as nodename from hv;
-
 select name, level(node) as level from hv;
+.. or ..
+select name, is_root(node) from hierarchy (
+using HIERARCHY_TABLE as v
+join prior u on v.PRED = u.SUCC
+order siblings by ORD asc
+start where PRED = 0
+set NODE)
+as h;
 
-select name, is_root(node) as isroot from hv;
+select name, is_root(node) as isroot 
+from hv;
 
-select name, is_root(node) as isroot from hv where is_root(node) = true;
+select name, is_root(node) as isroot 
+from hv 
+where is_root(node) = true;
 
 # hierarchy self-join to get descendant
-select a.name, b.name from hv a, hv b where is_descendant(a.node, b.node);
+select a.name, b.name 
+from hv a, hv b 
+where is_descendant(a.node, b.node);
 
 # hierarchy self-join to get descendant or self
-select a.name, b.name from hv a, hv b where is_descendant_or_self(a.node, b.node);
+select a.name, b.name 
+from hv a, hv b 
+where is_descendant_or_self(a.node, b.node);
 
 # hierarchy self-join to get ancestor
-select a.name, b.name from hv a, hv b where is_ancestor(a.node, b.node);
+select a.name, b.name 
+from hv a, hv b 
+where is_ancestor(a.node, b.node);
 
 # hierarchy self-join to get ancestor or self
-select a.name, b.name from hv a, hv b where is_ancestor_or_self(a.node, b.node);
+select a.name, b.name 
+from hv a, hv b 
+where is_ancestor_or_self(a.node, b.node);
 
 # hierarchy self-join to get parent
-select a.name, b.name from hv a, hv b where is_parent(a.node, b.node);
+select a.name, b.name 
+from hv a, hv b 
+where is_parent(a.node, b.node);
 
 # hierarchy self-join to get children
-select a.name, b.name from hv a, hv b where is_child(a.node, b.node);
+select a.name, b.name 
+from hv a, hv b 
+where is_child(a.node, b.node);
 
 # hierarchy self-join to get sibling
-select a.name, b.name from hv a, hv b where is_sibling(a.node, b.node);
+select a.name, b.name 
+from hv a, hv b 
+where is_sibling(a.node, b.node);
 
 # hierarchy self-join to get following
-select a.name, b.name from hv a, hv b where is_following(a.node, b.node);
+select a.name, b.name 
+from hv a, hv b 
+where is_following(a.node, b.node);
 
 # hierarchy self-join to get preceding
-select a.name, b.name from hv a, hv b where is_preceding(a.node, b.node);
-
-# build address_hv view
+select a.name, b.name 
+from hv a, hv b 
+where is_preceding(a.node, b.node);
 
 select * from addresses;
 
 # simple join of hierarchy view with another table
-select a.name, b.address from hv a, addresses b where a.succ = b.id;
+select a.name, b.address 
+from hv a, addresses b 
+where a.succ = b.id;
 .. or ..
-select name, address from addresses_hv;
+select name, address 
+from addresses_hv;
+
+select b.succ, b.name, a.address, b.level
+from
+(select succ, name, level(node) as level from hierarchy (
+using HIERARCHY_TABLE as v
+join prior u on v.PRED = u.SUCC
+order siblings by ORD asc
+start where PRED = 0
+set NODE)
+as h) b, addresses a
+where b.succ = a.id;
 
 # get ids of the children of the root.
-select hv2.succ as child from hv hv1, hv hv2 where is_child(hv2.node, hv1.node) and is_root(hv1.node);
+select hv2.succ as child 
+from hv hv1, hv hv2 
+where is_child(hv2.node, hv1.node) 
+and is_root(hv1.node);
 .. or ..
-select ahv2.succ as child from ahv ahv1, ahv ahv2 where is_child(ahv2.node, ahv1.node) and is_root(ahv1.node);
+select ahv2.succ as child 
+from addresses_hv ahv1, addresses_hv ahv2 
+where is_child(ahv2.node, ahv1.node) 
+and is_root(ahv1.node);
 
 # get addresses of the children of the root.
-select b.address from (select hv2.succ as child from hv hv1, hv hv2 where is_child(hv2.node, hv1.node) and is_root(hv1.node)) a, addresses b where a.child = b.id;
+select b.address 
+from 
+(select hv2.succ as child 
+from hv hv1, hv hv2 
+where is_child(hv2.node, hv1.node) 
+and is_root(hv1.node)) a, addresses b 
+where a.child = b.id;
 .. or ..
-select b.address from (select ahv2.id as child from addresses_hv ahv1, addresses_hv ahv2 where is_child(ahv2.node, ahv1.node) and is_root(ahv1.node)) a, addresses b where a.child = b.id;
+select b.address 
+from (select ahv2.id as child 
+from addresses_hv ahv1, addresses_hv ahv2 
+where is_child(ahv2.node, ahv1.node) 
+and is_root(ahv1.node)) a, addresses b 
+where a.child = b.id;
 
 # get names and addresses of 2nd level employees
-select a.name, b.address from hv a, addresses b where a.succ = b.id and level(a.node) = 2;
+select a.name, b.address 
+from hv a, addresses b 
+where a.succ = b.id 
+and level(a.node) = 2;
 .. or ..
-select name, address from addresses_hv where level(node) = 2;
+select name, address 
+from addresses_hv 
+where level(node) = 2;
 
 # get names and addresses of 3rd level employees
-select a.name, b.address from hv a, addresses b where a.succ = b.id and level(a.node) = 3;
+select a.name, b.address 
+from hv a, addresses b 
+where a.succ = b.id 
+and level(a.node) = 3;
 .. or ..
-select name, address from addresses_hv where level(node) = 3;
+select name, address 
+from addresses_hv 
+where level(node) = 3;
 
 ###############################################
 # SAP HANA VORA 1.3 HIERARCHIES : LEVEL-BASED #

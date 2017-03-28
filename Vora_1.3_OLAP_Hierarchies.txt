@@ -220,13 +220,13 @@ where level(node) = 3;
 ###############################################
 
 su - cluster_admin
-clear
 
+clear
 rm level-hierarchy.csv
 hdfs dfs -rm /user/cluster_admin/level-hierarchy.csv
 
 echo "VP, Manager, Carpenter" >> level-hierarchy.csv
-echo "Diane,Austin" >> level-hierarchy.csv
+echo "Diane,Austin,Sarah" >> level-hierarchy.csv
 echo "Diane,Joe,Denys" >> level-hierarchy.csv
 echo "Diane,Joe,Jamie" >> level-hierarchy.csv
 echo "Diane,Joe,Julie" >> level-hierarchy.csv
@@ -240,6 +240,11 @@ hdfs dfs -cat /user/cluster_admin/level-hierarchy.csv
 
 %spark.vora drop table if exists LEVEL_HIERARCHY_TABLE cascade
 
+%spark.vora register all tables using com.sap.spark.vora ignoring conflicts
+%spark.vora register all tables using com.sap.spark.engines.disk ignoring conflicts
+
+%spark.vora show tables
+
 %spark.vora create table LEVEL_HIERARCHY_TABLE
 (VP string, MANAGER string, CARPENTER string) 
 using com.sap.spark.vora 
@@ -252,12 +257,12 @@ csvskip "1")
 
 ## level-based hierarchy view
 %spark.vora create view lhv as 
-select node, vp, manager, carpenter from hierarchy (
-using level_hierarchy_table with levels (vp, manager, carpenter)
-match path order siblings by carpenter asc
-set node) as lhv
+select NODE, VP, MANAGER, CARPENTER from hierarchy (
+using LEVEL_HIERARCHY_TABLE with levels (VP, MANAGER, CARPENTER)
+match path order siblings by CARPENTER asc
+set NODE) as lhv
 
 %spark.vora select * from lhv
 
-%spark.vora select distinct vp, manager, carpenter 
-from lhv where level(node) = 3
+%spark.vora select distinct VP, MANAGER, CARPENTER 
+from lhv where level(NODE) = 1

@@ -72,7 +72,7 @@ using com.sap.spark.engines;
 ``select a.name 
 from player a, team m 
 using graph soccer 
-where m.name='manchester united' 
+where m.name='Manchester United' 
 and m in a.has_played_for``
 using com.sap.spark.engines;
 
@@ -115,7 +115,7 @@ using com.sap.spark.engines;
 distance(undirected a,b) as d 
 from player a, player b 
 using graph soccer 
-where a.name='christiano ronaldo'``
+where a.name='Christiano Ronaldo'``
 using com.sap.spark.engines;
 
 ``select a.name, b.name 

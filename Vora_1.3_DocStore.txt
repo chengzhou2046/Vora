@@ -2,6 +2,10 @@
 # SAP HANA VORA 1.3 DOC STORE #
 ###############################
 
+# In-memory distributed computing engine for analyzing schema-less JavaScript Object Notation (JSON) format files
+# Introduces NoSQL features like storing JSON documents. 
+# Supports schema-less tables, allowing you to flexibly add or remove fields from any documents and helps scale horizontally.
+
 http://jsonlint.com/
 
 clear
@@ -9,8 +13,6 @@ rm legend_dims.json
 rm legend_facts.json
 hdfs dfs -rm /user/cluster_admin/legend_dims.json
 hdfs dfs -rm /user/cluster_admin/legend_facts.json
-hdfs dfs -ls /user/cluster_admin/
-clear
 
 echo '{"playerid": 1, "name": "George Best", "placeofbirth": {"city": "Belfast", "country": "Northern Ireland"}, "played_for": [{"team": "Manchester United"}, {"team": "Jewish Guild"}, {"team": "Dunstable Town"}, {"team": "Stockport County"}, {"team": "Cork Celtic"}, {"team": "Los Angeles Aztecs"}, {"team": "Fulham"}, {"team": "Los Angeles Aztecs"}, {"team": "Fort Lauderdale Strikers"}, {"team": "Hibernian"}, {"team": "San Jose Earthquakes"}, {"team": "San Jose Earthquakes (indoor)"}, {"team": "Sea Bee"}, {"team": "Hong Kong Rangers"}, {"team": "Bournemouth"}, {"team": "Brisbane Lions"}, {"team": "Osborne Park Galeb"}, {"team": "Nuneaton Borough"}, {"team": "Tobermore United"}], "dateofbirth": "1946-05-22T00:00:00.000Z"} 
 {"playerid": 2, "name": "Eric Cantona", "placeofbirth": {"city": "Marseille", "country": "France"}, "played_for": [{"team": "Auxerre"}, {"team": "Martigues"}, {"team": "Marseille"}, {"team": "Bordeaux"}, {"team": "Montpellier"}, {"team": "Nîmes"}, {"team": "Leeds United"}, {"team": "Manchester United"}], "dateofbirth": "1966-05-24T00:00:00.000Z"}'>> legend_dims.json
@@ -47,10 +49,8 @@ echo '{"playerid": 1, "year": 1960, "team": "Manchester United", "appearances": 
 
 cat legend_facts.json
 
-hdfs dfs -ls /user/cluster_admin/
 hdfs dfs -put legend_dims.json
 hdfs dfs -put legend_facts.json
-hdfs dfs -ls /user/cluster_admin/
 clear
 hdfs dfs -cat /user/cluster_admin/legend_dims.json
 hdfs dfs -cat /user/cluster_admin/legend_facts.json
@@ -61,15 +61,15 @@ hdfs dfs -cat /user/cluster_admin/legend_facts.json
 drop collection legend_dims
 using com.sap.spark.engines;
 
+drop collection legend_facts
+using com.sap.spark.engines;
+
 create collection legend_dims
 using com.sap.spark.engines
 options 
 (
 files "/user/cluster_admin/legend_dims.json"
 );
-
-drop collection legend_facts
-using com.sap.spark.engines;
 
 create collection legend_facts
 using com.sap.spark.engines

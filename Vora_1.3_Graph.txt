@@ -24,13 +24,15 @@ cat soccer.jsg
 hdfs dfs -put soccer.jsg /user/cluster_admin
 hdfs dfs -cat /user/cluster_admin/soccer.jsg
 
-########################
-
 drop graph soccer using com.sap.spark.engines;
 
 create graph soccer
 using com.sap.spark.engines
 options (files '/user/cluster_admin/soccer.jsg');
+
+#############
+# GRAPH SQL #
+#############
 
 ``select name 
 from player

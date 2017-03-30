@@ -219,75 +219,85 @@ where level(node) = 3;
 # SAP HANA VORA 1.3 HIERARCHIES : LEVEL-BASED #
 ###############################################
 
-u - cluster_admin
+su - cluster_admin
 
 clear
 rm level-hierarchy.csv
 hdfs dfs -rm /user/cluster_admin/level-hierarchy.csv
 
-echo "VP, Manager, Carpenter, Ord" >> level-hierarchy.csv
-echo "Diane,Austin,Sarah,1" >> level-hierarchy.csv
-echo "Diane,Joe,Denys,2" >> level-hierarchy.csv
-echo "Diane,Joe,Jamie,3" >> level-hierarchy.csv
-echo "Diane,Joe,Julie,4" >> level-hierarchy.csv
-echo "Diane,Joe,Bob,5" >> level-hierarchy.csv
-echo "Diane,Joe,Phil,6" >> level-hierarchy.csv
+echo "Continent, Country, City, Team, Formed" >> level-hierarchy.csv
+echo "Americas,USA,New York,NYCFC,2015" >> level-hierarchy.csv
+echo "Americas,USA,New York,Red Bulls,1995" >> level-hierarchy.csv
+echo "Americas,USA,Los Angeles,LA Galaxy,1994" >> level-hierarchy.csv
+echo "Europe,England,Manchester,Manchester United,1878" >> level-hierarchy.csv
+echo "Europe,England,Manchester,Stockport County,1883" >> level-hierarchy.csv
+echo "Europe,England,Liverpool,Everton FC,1878" >> level-hierarchy.csv
+echo "Europe,England,Liverpool,Tranmere Rovers,1885" >> level-hierarchy.csv
+echo "Europe,Germany,Munich,Bayern Munich,1900" >> level-hierarchy.csv
 
-hdfs dfs -ls /user/cluster_admin/
 hdfs dfs -put level-hierarchy.csv
-hdfs dfs -ls /user/cluster_admin/
 hdfs dfs -cat /user/cluster_admin/level-hierarchy.csv
 
-%spark.vora register all tables using com.sap.spark.vora ignoring conflicts
-%spark.vora register all tables using com.sap.spark.engines.disk ignoring conflicts
+# in Vora Tools
+drop table if exists LEVEL_HIERARCHY_TABLE cascade;
+create table LEVEL_HIERARCHY_TABLE
+(CONTINENT varchar(20), COUNTRY varchar(20), CITY varchar(20), TEAM varchar(20), FORMED integer)
+using com.sap.spark.vora 
+options (files "/user/cluster_admin/level-hierarchy.csv",
+csvskip "1");
+
+# Build View in Modeller
+# Show SQL of View in Modeller
+
+# in Zep
+%spark.vora show tables
+
+%spark.vora register table LEVEL_HIERARCHY_TABLE using com.sap.spark.vora ignoring conflicts
+
+%spark.vora register table LHV using com.sap.spark.vora ignoring conflicts
 
 %spark.vora show tables
 
-%spark.vora drop table if exists LEVEL_HIERARCHY_TABLE cascade
+%spark.vora select * from LEVEL_HIERARCHY_TABLE
 
-%spark.vora create table LEVEL_HIERARCHY_TABLE
-(VP string, MANAGER string, CARPENTER string, ORD integer) 
+%spark.vora select * from LHV
+
+# show following but don't execute
+%spark.vora drop table if exists level_hierarchy_table cascade
+
+# show following but don't execute
+%spark.vora create table level_hierarchy_table2
+(continent varchar(20), country varchar(20), city varchar(20), team varchar(20), formed integer)
 using com.sap.spark.vora 
 options (files "/user/cluster_admin/level-hierarchy.csv",
 csvskip "1")
 
-%spark.vora select * from LEVEL_HIERARCHY_TABLE
+# show following but don't execute
+%spark.vora drop view if exists lhv3 cascade
 
-%spark.vora drop view if exists lhv cascade
-
+# show following but don't execute
 ## level-based hierarchy view
-%spark.vora create view lhv as 
-select NODE, VP, MANAGER, CARPENTER, ORD from hierarchy 
-(using LEVEL_HIERARCHY_TABLE with levels (VP, MANAGER, CARPENTER)
+%spark.vora create view lhv3 as 
+select continent, country, city, team, formed, node from hierarchy 
+(using level_hierarchy_table with levels (continent, country, city, team)
 match path 
-order siblings by ORD asc
-set NODE) as lhv
+set node) as lhv
 
-%spark.vora select * from lhv
+%spark.vora select distinct level(NODE) as NODELEVEL,
+name(NODE) as NODENAME, 
+CONTINENT, COUNTRY, CITY, TEAM, FORMED 
+from LHV
+order by NODELEVEL
 
-%spark.vora select distinct name(NODE) as NODENAME, 
-VP, MANAGER, CARPENTER, ORD from lhv
-order by VP, MANAGER, ORD
-
-%spark.vora select distinct level(NODE) as LEVEL, 
-VP, MANAGER, CARPENTER, ORD from lhv 
-order by LEVEL, ORD
-
-%spark.vora select distinct name(a.NODE) as Parent, 
-name(b.NODE) as Child 
-from lhv a, lhv b 
+%spark.vora select distinct name(b.NODE) as CHILD, 
+name(a.NODE) as PARENT
+from LHV a, LHV b 
 where is_parent(a.NODE, b.NODE)
 
-%spark.vora select distinct name(a.NODE) as Sibling1, 
-name(b.NODE) as Sibling2
-from lhv a, lhv b 
+%spark.vora select distinct name(a.NODE) as SIBLING1, 
+name(b.NODE) as SIBLING2
+from LHV a, LHV b 
 where is_sibling(a.NODE, b.NODE)
 
-%spark.vora select distinct name(b.NODE) as First, 
-name(a.NODE) as Second
-from lhv a, lhv b 
-where is_following(a.NODE, b.NODE)
-order by First
-
-%spark.vora select distinct VP, MANAGER, CARPENTER 
-from lhv where level(NODE) = 1
+%spark.vora select distinct name(NODE) as NODENAME
+from LHV where level(NODE) = 1

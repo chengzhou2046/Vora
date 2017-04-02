@@ -82,7 +82,8 @@ using com.sap.spark.engines;
 from player a, player b, team m 
 using graph soccer 
 where (m in a.has_played_for) 
-and (m in b.has_played_for)``
+and (m in b.has_played_for)
+and a.name != b.name``
 using com.sap.spark.engines;
 
 ``select a.name, b.name 
@@ -91,6 +92,15 @@ using graph soccer
 where m in a.has_played_for 
 and m in b.has_played_for
 and a<b``
+using com.sap.spark.engines;
+
+###################
+# GRAPH FUNCTIONS #
+###################
+
+``select count(name) as number_of_teams
+from team
+using graph soccer``
 using com.sap.spark.engines;
 
 ``select m.name, 

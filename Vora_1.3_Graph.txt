@@ -142,3 +142,22 @@ connected_component(weak a) as wcc
 from player a 
 using graph soccer``
 using com.sap.spark.engines;
+
+echo '["TEAM",13,[["NAME","Tottenham Hotspur"],["CITY","London"],["COUNTRY","England"]],[["BEEN_MANAGED_BY",14]]]' >> soccer.jsg
+echo '["MANAGER",14,[["NAME","Harry Redknapp"]],[]]' >> soccer.jsg
+hdfs dfs -rm r /user/cluster_admin/soccer.jsg
+hdfs dfs -put soccer.jsg /user/cluster_admin
+hdfs dfs -cat /user/cluster_admin/soccer.jsg
+
+drop graph soccer using com.sap.spark.engines;
+
+create graph soccer
+using com.sap.spark.engines
+options (files '/user/cluster_admin/soccer.jsg');
+
+``select a.name, 
+connected_component(strong a) as scc, 
+connected_component(weak a) as wcc 
+from any a 
+using graph soccer``
+using com.sap.spark.engines;

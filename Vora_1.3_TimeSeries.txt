@@ -47,6 +47,10 @@ echo '2016-12-01 00:00:00.0,16.4,1.0' >> adv_sale.csv
 hdfs dfs -put adv_sale.csv /user/cluster_admin
 hdfs dfs -cat /user/cluster_admin/adv_sale.csv
 
+########################
+### USING PARTITIONS ###
+########################
+
 DROP PARTITION SCHEME PS_TS USING com.sap.spark.engines;
 DROP PARTITION FUNCTION PF_TS USING com.sap.spark.engines;
 
@@ -64,6 +68,20 @@ START TIMESTAMP '2014-01-01 00:00:00'
 END TIMESTAMP '2016-12-01 00:00:00'
 ) 
 PARTITION BY PS_TS(TS) USING com.sap.spark.engines 
+OPTIONS (files "/user/cluster_admin/adv_sale.csv",
+csvskip "1");
+
+############################
+### NOT USING PARTITIONS ###
+############################
+
+CREATE TABLE ADV_SALE (TS TIMESTAMP, ADV double, SALE double) 
+SERIES 
+(
+PERIOD FOR SERIES TS 
+START TIMESTAMP '2014-01-01 00:00:00' 
+END TIMESTAMP '2016-12-01 00:00:00'
+) 
 OPTIONS (files "/user/cluster_admin/adv_sale.csv",
 csvskip "1");
 
@@ -100,4 +118,3 @@ USING com.sap.spark.engines;
 ``select mode(SALE) AS MODESALE, mode(ADV) AS MODEADV 
 from ADV_SALE`` 
 USING com.sap.spark.engines;
-

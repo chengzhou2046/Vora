@@ -51,8 +51,6 @@ hdfs dfs -cat /user/cluster_admin/adv_sale.csv
 ### NOT USING PARTITIONS ###
 ############################
 
-# Note that the TREND function doesn't work unless you have use partition schema and function
-
 DROP SERIES TABLE ADV_SALE USING com.sap.spark.engines;
 
 CREATE TABLE ADV_SALE (TS TIMESTAMP, ADV double, SALE double) 
@@ -70,6 +68,7 @@ csvskip "1");
 ### USING PARTITIONS ###
 ########################
 
+DROP SERIES TABLE ADV_SALE USING com.sap.spark.engines;
 DROP PARTITION SCHEME PS_TS USING com.sap.spark.engines;
 DROP PARTITION FUNCTION PF_TS USING com.sap.spark.engines;
 
@@ -78,8 +77,6 @@ BOUNDARIES(TIMESTAMP '2014-01-01 00:00:00', TIMESTAMP '2016-12-01 00:00:00')
 USING com.sap.spark.engines;
 
 CREATE PARTITION SCHEME PS_TS USING PF_TS USING com.sap.spark.engines;
-
-DROP SERIES TABLE ADV_SALE USING com.sap.spark.engines;
 
 CREATE TABLE ADV_SALE (TS TIMESTAMP, ADV double, SALE double) 
 SERIES 
@@ -91,6 +88,8 @@ END TIMESTAMP '2016-12-01 00:00:00'
 PARTITION BY PS_TS(TS) USING com.sap.spark.engines 
 OPTIONS (files "/user/cluster_admin/adv_sale.csv",
 csvskip "1");
+
+``SELECT * FROM ADV_SALE`` USING com.sap.spark.engines;
 
 ###########################
 ### COMPRESSION EXAMPLE ###
@@ -112,6 +111,8 @@ PARTITION BY PS_TS(TS) USING com.sap.spark.engines
 OPTIONS (files "/user/cluster_admin/adv_sale.csv",
 csvskip "1");
 
+``SELECT * FROM ADV_SALE`` USING com.sap.spark.engines;
+
 #######################
 ### RE-LOADING DATA ###
 #######################
@@ -128,21 +129,22 @@ csvskip "1");
 WHERE PERIOD AS OF TIMESTAMP '2015-09-01 00:00:00'`` 
 USING com.sap.spark.engines;
 
-# Simple analysis: Sale trend over the last 4 months in 2016
+``SELECT SALE as SALETREND 
+FROM SERIES TABLE ADV_SALE 
+WHERE PERIOD AS OF TIMESTAMP '2016-08-01 00:00:00'`` 
+USING com.sap.spark.engines;
+
 ``SELECT trend(SALE) as SALETREND 
 FROM SERIES TABLE ADV_SALE 
 WHERE PERIOD AS OF TIMESTAMP '2016-08-01 00:00:00'`` 
 USING com.sap.spark.engines;
 
-# Multi column analysis with Sales-Advertising
 ``SELECT median(SALE) as SALEMEDIAN, median(ADV) as ADVMEDIAN
 FROM ADV_SALE 
 WHERE PERIOD BETWEEN TIMESTAMP '2015-08-01 00:00:00' 
 AND TIMESTAMP '2016-08-01 00:00:00'`` 
 USING com.sap.spark.engines;
 
-# What is the overall trend in available sales and advertising over the year of 2015?
-# The TREND function doesn't work unless you have use partition schema and function
 ``SELECT trend(SALE) as SALETREND, trend(ADV) AS ADVTREND 
 FROM ADV_SALE 
 WHERE PERIOD BETWEEN TIMESTAMP '2015-01-01 00:00:00' 
@@ -157,14 +159,13 @@ USING com.sap.spark.engines;
 from ADV_SALE`` 
 USING com.sap.spark.engines;
 
-# frequency distribution of values of a specified column
 ``select * from histogram
-(series ADV_SALE, 10,
+(series ADV_SALE, 12,
 descriptor(SALE)) hist`` 
 USING com.sap.spark.engines;
 
 ``select * from auto_corr
-(series ADV_SALE, 48,
+(series ADV_SALE, 12,
 descriptor(SALE)) auto_corr_res`` 
 USING com.sap.spark.engines;
 

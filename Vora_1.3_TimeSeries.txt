@@ -159,13 +159,14 @@ USING com.sap.spark.engines;
 from ADV_SALE`` 
 USING com.sap.spark.engines;
 
+``select * from auto_corr
+(series ADV_SALE, 12,
+descriptor(SALE)) auto_corr_res`` 
+USING com.sap.spark.engines;
+
 ``select * from histogram
 (series ADV_SALE, 12,
 descriptor(SALE)) hist`` 
 USING com.sap.spark.engines;
 
-``select * from auto_corr
-(series ADV_SALE, 12,
-descriptor(SALE)) auto_corr_res`` 
-USING com.sap.spark.engines;
 

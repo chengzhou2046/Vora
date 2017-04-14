@@ -250,5 +250,6 @@ CREATE TABLE national_grid_demand (
                     EVEN => DESCRIPTOR( Embedded_Wind_Generation, Embedded_Solar_Generation ),
                     SAME => DESCRIPTOR( Embedded_Wind_Capacity, Embedded_Solar_Capacity)
                    )
-    WHERE PERIOD BETWEEN TIMESTAMP '2015-08-01 08:00:00'\n AND TIMESTAMP '2015-08-01 12:00:00'``
+    WHERE PERIOD BETWEEN TIMESTAMP '2015-08-01 08:00:00' 
+    AND TIMESTAMP '2015-08-01 12:00:00'``
   USING com.sap.spark.engines

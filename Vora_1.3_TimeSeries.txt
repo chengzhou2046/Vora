@@ -159,6 +159,10 @@ USING com.sap.spark.engines;
 from ADV_SALE`` 
 USING com.sap.spark.engines;
 
+#######################
+### TABLE FUNCTIONS ###
+#######################
+
 ``select * from auto_corr
 (series ADV_SALE, 12,
 descriptor(SALE)) auto_corr_res`` 
@@ -169,4 +173,74 @@ USING com.sap.spark.engines;
 descriptor(SALE)) hist`` 
 USING com.sap.spark.engines;
 
+#################
+### GRANULIZE ###
+#################
 
+CREATE PARTITION FUNCTION PF1(C TIMESTAMP)
+  AS RANGE BOUNDARIES(TIMESTAMP '2015-04-01 09:00:00.0000', TIMESTAMP '2015-09-01 09:00:00.0000')
+  USING com.sap.spark.engines;
+ 
+CREATE PARTITION SCHEME PS1 USING PF1
+  USING com.sap.spark.engines;
+ 
+CREATE TABLE national_grid_demand (
+    ts TIMESTAMP,
+    ND double,
+    I014_ND double,
+    TSD double,
+    I014_TSD double,
+    England_Wales_Demand double,
+    Embedded_Wind_Generation double,
+    Embedded_Wind_Capacity integer,
+    Embedded_Solar_Generation double,
+    Embedded_Solar_Capacity integer )
+  SERIES (
+    PERIOD FOR SERIES ts START TIMESTAMP '2015-01-01 00:00:00' END TIMESTAMP '2016-01-01 00:00:00'
+    EQUIDISTANT INCREMENT BY 30 MINUTE DEFAULT COMPRESSION use (APCA error 3.0 percent)
+    COMPRESSION ON (Embedded_Wind_Generation) use (SDT error 4.0 percent)
+    COMPRESSION ON (Embedded_Solar_Generation) use (SDT error 5.0 percent) )
+  PARTITION BY PS1( ts )
+  USING com.sap.spark.engines\r\n
+  OPTIONS ( files "/user/cluster_admin/DemandData.csv",
+            csvskip "1",
+            csvdelimiter ";",
+            storagebackend "hdfs"
+          );
+ 
+-- The raw data is collected at half hour increments, but what if we would like to see it at the daily level?
+``SELECT ts,
+          Embedded_Wind_Generation,
+          Embedded_Wind_Capacity,
+          Embedded_Solar_Generation,
+          Embedded_Solar_Capacity
+    FROM GRANULIZE( SERIES national_grid_demand,
+                    24 HOUR,
+                    ROUND_HALF_UP,
+                    SUM => DESCRIPTOR( Embedded_Wind_Generation, Embedded_Solar_Generation ),
+                    AVG => DESCRIPTOR( Embedded_Wind_Capacity, Embedded_Solar_Capacity)
+                   )
+    WHERE PERIOD BETWEEN TIMESTAMP '2015-08-01 12:00:00' AND TIMESTAMP '2015-08-03 12:00:00'``
+  USING com.sap.spark.engines
+ 
+-- The raw data is collected at half hour increments, but what if we would like to see it at 15 minute increments?
+``SELECT ts,
+          ND,
+          I014_ND,
+          TSD,
+          I014_TSD,
+          England_Wales_Demand,
+          Embedded_Wind_Generation,
+          Embedded_Wind_Capacity,
+          Embedded_Solar_Generation,
+          Embedded_Solar_Capacity
+    FROM GRANULIZE( SERIES national_grid_demand,
+                    15 Minute,
+                    ROUND_HALF_UP,
+                    EVEN => DESCRIPTOR( ND, I014_ND ),
+                    EVEN => DESCRIPTOR( TSD, I014_TSD, England_Wales_Demand ),
+                    EVEN => DESCRIPTOR( Embedded_Wind_Generation, Embedded_Solar_Generation ),
+                    SAME => DESCRIPTOR( Embedded_Wind_Capacity, Embedded_Solar_Capacity)
+                   )
+    WHERE PERIOD BETWEEN TIMESTAMP '2015-08-01 08:00:00'\n AND TIMESTAMP '2015-08-01 12:00:00'``
+  USING com.sap.spark.engines

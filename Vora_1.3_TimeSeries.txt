@@ -182,8 +182,13 @@ rm demanddata.csv
 hdfs dfs -rm /user/cluster_admin/demanddata.csv
 
 wget https://raw.githubusercontent.com/saphanaacademy/Vora/master/Vora_1.3_TimeSeries_DemandData.csv -O demanddata.csv
+
 hdfs dfs -put demanddata.csv /user/cluster_admin
 hdfs dfs -cat /user/cluster_admin/demanddata.csv
+
+DROP SERIES TABLE NATIONAL_GRID_DEMAND USING com.sap.spark.engines;
+DROP PARTITION SCHEME PS1 USING com.sap.spark.engines;
+DROP PARTITION FUNCTION PF1 USING com.sap.spark.engines;
 
 CREATE PARTITION FUNCTION PF1(C TIMESTAMP)
   AS RANGE BOUNDARIES(TIMESTAMP '2015-04-01 09:00:00.0000', TIMESTAMP '2015-09-01 09:00:00.0000')
@@ -192,7 +197,7 @@ CREATE PARTITION FUNCTION PF1(C TIMESTAMP)
 CREATE PARTITION SCHEME PS1 USING PF1
   USING com.sap.spark.engines;
  
-CREATE TABLE national_grid_demand (
+CREATE TABLE NATIONAL_GRID_DEMAND (
     ts TIMESTAMP,
     ND double,
     I014_ND double,
@@ -221,14 +226,14 @@ CREATE TABLE national_grid_demand (
           Embedded_Wind_Capacity,
           Embedded_Solar_Generation,
           Embedded_Solar_Capacity
-    FROM GRANULIZE( SERIES national_grid_demand,
+    FROM GRANULIZE( SERIES NATIONAL_GRID_DEMAND,
                     24 HOUR,
                     ROUND_HALF_UP,
                     SUM => DESCRIPTOR( Embedded_Wind_Generation, Embedded_Solar_Generation ),
                     AVG => DESCRIPTOR( Embedded_Wind_Capacity, Embedded_Solar_Capacity)
                    )
     WHERE PERIOD BETWEEN TIMESTAMP '2015-08-01 12:00:00' AND TIMESTAMP '2015-08-03 12:00:00'``
-  USING com.sap.spark.engines
+  USING com.sap.spark.engines;
  
 ``SELECT ts,
           ND,
@@ -240,7 +245,7 @@ CREATE TABLE national_grid_demand (
           Embedded_Wind_Capacity,
           Embedded_Solar_Generation,
           Embedded_Solar_Capacity
-    FROM GRANULIZE( SERIES national_grid_demand,
+    FROM GRANULIZE( SERIES NATIONAL_GRID_DEMAND,
                     15 Minute,
                     ROUND_HALF_UP,
                     EVEN => DESCRIPTOR( ND, I014_ND ),
@@ -250,4 +255,4 @@ CREATE TABLE national_grid_demand (
                    )
     WHERE PERIOD BETWEEN TIMESTAMP '2015-08-01 08:00:00' 
     AND TIMESTAMP '2015-08-01 12:00:00'``
-  USING com.sap.spark.engines
+  USING com.sap.spark.engines;

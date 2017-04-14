@@ -216,7 +216,6 @@ CREATE TABLE national_grid_demand (
             storagebackend "hdfs"
           );
  
--- The raw data is collected at half hour increments, but what if we would like to see it at the daily level?
 ``SELECT ts,
           Embedded_Wind_Generation,
           Embedded_Wind_Capacity,
@@ -231,7 +230,6 @@ CREATE TABLE national_grid_demand (
     WHERE PERIOD BETWEEN TIMESTAMP '2015-08-01 12:00:00' AND TIMESTAMP '2015-08-03 12:00:00'``
   USING com.sap.spark.engines
  
--- The raw data is collected at half hour increments, but what if we would like to see it at 15 minute increments?
 ``SELECT ts,
           ND,
           I014_ND,

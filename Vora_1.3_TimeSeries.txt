@@ -181,7 +181,7 @@ clear
 rm demanddata.csv
 hdfs dfs -rm /user/cluster_admin/demanddata.csv
 
-wget https://raw.githubusercontent.com/saphanaacademy/Vora/master/DemandData_for_TS.csv -O demanddata.csv
+wget https://raw.githubusercontent.com/saphanaacademy/Vora/master/Vora_1.3_TimeSeries_DemandData.csv -O demanddata.csv
 hdfs dfs -put demanddata.csv /user/cluster_admin
 hdfs dfs -cat /user/cluster_admin/demanddata.csv
 

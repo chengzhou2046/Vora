@@ -202,7 +202,7 @@ CREATE TABLE national_grid_demand (
     COMPRESSION ON (Embedded_Solar_Generation) use (SDT error 5.0 percent) )
   PARTITION BY PS1( ts )
   USING com.sap.spark.engines\r\n
-  OPTIONS ( files "/user/cluster_admin/DemandData.csv",
+  OPTIONS ( files "/user/cluster_admin/DemandData_for_TS.csv",
             csvskip "1",
             csvdelimiter ";",
             storagebackend "hdfs"

@@ -1,5 +1,10 @@
+##################################
+# SAP HANA VORA 1.4 INSTALLATION #
+##################################
+
 # AWS
 launch suse-sles-11-sp4-sapcal-v20160415-hvm-ssd-x86_64 AMI in AWS 
+Make HD 40 GB minimum
 
 # when logged in
 sudo su -

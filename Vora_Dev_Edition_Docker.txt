@@ -20,6 +20,12 @@ hdfs dfs -ls /user/vora
 
 hdfs dfs -cat /user/vora/aggdata.csv
 
+%vora show tables
+
 %vora create table aggtable (team string, quantity int)
 using com.sap.spark.vora
 options (files "/user/vora/aggdata.csv")
+
+%vora show tables
+
+%vora select * from aggtable

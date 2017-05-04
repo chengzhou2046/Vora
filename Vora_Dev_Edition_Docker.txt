@@ -1,6 +1,11 @@
+sudo su -
+
 docker ps
 
 docker exec -it <containerID> bash
+# eg. docker exec -it 7305cf71f2a8 bash
+
+su - vora
 
 echo "Sales,10" >> aggdata.csv
 echo "HR,20" >> aggdata.csv

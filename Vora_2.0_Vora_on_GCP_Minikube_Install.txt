@@ -110,7 +110,7 @@ export DOCKER_REGISTRY=localhost:5000
 
 cd SAPVora-DistributedRuntime/
 
-./install.sh -dt=cloud -ss=vora-diagnostic --enable-rbac=no --configure-hdfs=no --configure-hana=no --enable-security-operator=yes --enable-authentication=yes --vora-admin-username=vora --vora-admin-password=SHALive1 -a
+./install.sh -dt=cloud -ss=vora-diagnostic --enable-rbac=no --configure-hdfs=no --configure-hana=no --enable-security-operator=yes --enable-authentication=yes --vora-admin-username=vora --vora-admin-password=??????? -a
 
 ### To re-initialize. Port stays the same
 cd SAPVora-DistributedRuntime
